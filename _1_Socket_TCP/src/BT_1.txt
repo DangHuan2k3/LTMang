@@ -1,0 +1,29 @@
+1. Viết chchương trình Client kết nối với Server để lấy về ngày tháng năm, ....
+theo ICT
+
+2. Viết chương trình Client giữa Client và Server theo TCP
+
+3. Viết chương trình trao đổi thông tin thông điệp giữa Client/ Server
+Chương trình Client gửi chuỗi bất kì lên Server. Chương trình server xử lí và trả về
+	+ Chuỗi hoa của chuỗi đã cho
+	+ Chuỗi thường của chuỗi đã cho
+	+ Chuỗi vừa hoa vừa thường của chuỗi đã cho
+	
+4. Viết chương trình truy xuất CSDL theo mô hình Client/Server
+
+
+
+5> Bước cơ bản của chương trình CLIENT
+	b1. Tạo một đối tượng Socket
+		Socket client = new Socket(“hostname”,portName);
+		
+	b2. Tạo một luồng xuất để có thể sử dụng để thông tin tới Socket
+		PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+	
+	b3. Tạo một luồng nhập để đọc thông tin đáp ứng từ server
+	BufferedReader in=new BufferedReader(new InputStreamReader(client.getInputStream()));
+	
+	b4. Thực hiện các thao tác vào/ra với các luồng nhập và luồng xuất
+	
+	b5. Đóng socket khi hoàn thành quá trình truyền tin
+	
