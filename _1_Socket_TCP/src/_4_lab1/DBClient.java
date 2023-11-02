@@ -29,6 +29,7 @@ public class DBClient extends JFrame {
 
     public void importGUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Database Client");
 
         setLayout(null);
         setSize(500, 800);

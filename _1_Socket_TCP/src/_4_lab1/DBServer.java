@@ -36,6 +36,7 @@ public class DBServer extends JFrame {
 
     public void importGUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Database Server");
         this.setLayout(null);
         this.setSize(500, 800);
 
