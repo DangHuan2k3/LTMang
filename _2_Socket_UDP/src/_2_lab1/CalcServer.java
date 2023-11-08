@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,12 +24,15 @@ import javax.swing.JTextField;
  * CalcServer
  */
 public class CalcServer extends JFrame {
-    private Socket s;
+    private DatagramSocket serverSocket;
     private Integer defaultPort = 8888;
 
     private JTextField txtfPort = new JTextField();
     private JButton btnOpenPort = new JButton("Open port");
     private JTextArea txtaStatus = new JTextArea();
+
+    byte[] receiveData = new byte[1024];
+    byte[] sendData = new byte[1024];
 
     public CalcServer() {
         importGUI();
@@ -72,42 +77,49 @@ public class CalcServer extends JFrame {
 
     public void handleBtnOpenPort() {
         try {
-            ServerSocket server = new ServerSocket(Integer.parseInt(txtfPort.getText().toString()));
-            txtaStatus.setText(txtaStatus.getText() +
-                    "TCP/Server running on : " + InetAddress.getLocalHost() + " ,Port " +
-                    server.getLocalPort());
+            serverSocket = new DatagramSocket(Integer.parseInt(txtfPort.getText()));
+            txtaStatus.append("Open port use UDP method in port " + Integer.parseInt(txtfPort.getText()) + "\n");
+            // Vô hiệu hoá txtfPort và btnOpenPort
+            txtfPort.setEditable(false);
             btnOpenPort.setEnabled(false);
-            while (true) {
-                s = server.accept();
 
-                Thread t_sockets = new Thread(() -> {
-                    try {
-                        DataInputStream dis = new DataInputStream(s.getInputStream());
-                        DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-                        txtaStatus.setText(
-                                txtaStatus.getText() + "\n" + "...Server is waiting input from client socket = ..."
-                                        + s);
-                        this.handleClient(dis, dos);
-                    } catch (Exception e) {
-                        // TODO: handle exception
-                    }
-                });
-                t_sockets.start();
-            }
+            Thread t = new Thread(() -> {
+                handleClient();
+            });
+            t.start();
         } catch (Exception e) {
             // TODO: handle exception
             e.printStackTrace();
         }
     }
 
-    public void handleClient(DataInputStream dis, DataOutputStream dos) {
+    public void handleClient() {
         try {
             while (true) {
-                String str = dis.readUTF();
+                // Tạo packet gói rỗng để nhận dữ liệu từ Client
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                // Nhận dữ liệu từ client
+                serverSocket.receive(receivePacket);
+                // Lấy địa chỉ IP của máy Client
+                InetAddress IPAddress = receivePacket.getAddress();
 
-                txtaStatus.setText(txtaStatus.getText() + "\nRecived: " + str + " from socketClient = " + s);
-                dos.writeUTF(str + " = " + calculate(str));
+                // Lấy port của chương trình Client
+                int port = receivePacket.getPort();
 
+                // Lấy ngày giờ để gửi ngược lại client
+                String request = new String(receivePacket.getData());
+                System.out.println(request);
+                request = request.trim();
+                System.out.println(request.trim().length());
+                txtaStatus.append("Recived from " + IPAddress.toString() + ": " + request + "\n");
+
+                String s = request + "=" + calculate(request) + "\n";
+
+                sendData = s.trim().getBytes();
+
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                // Gửi dữ liệu lại cho client
+                serverSocket.send(sendPacket);
             }
         } catch (Exception e) {
             // TODO: handle exception
@@ -116,8 +128,8 @@ public class CalcServer extends JFrame {
     }
 
     public static void main(String[] args) {
-        String s = "(123+2)*3-4";
-        System.out.println(calculate(s));
+        // String s = "(123+2)*3-4";
+        // System.out.println(calculate(s));
         new CalcServer();
     }
 
