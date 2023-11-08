@@ -56,7 +56,6 @@ public class ChatServer {
                 String message = new String(receivePacket.getData());
                 message = message.trim();
                 System.out.println("CLIENT: " + message);
-
             }
         } catch (Exception e) {
             // TODO: handle exception
